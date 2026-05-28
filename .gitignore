@@ -1,0 +1,14 @@
+# 엑셀 파일 및 대용량 원본 데이터 제외 (보안 및 용량 초과 방지)
+*.xls
+*.xlsx
+*.xlsb
+*.xlsm
+~$*
+
+# 임시 검사 도구 제외
+check_excel.html
+
+# OS 및 시스템 임시 파일
+.DS_Store
+Thumbs.db
+Desktop.ini
