@@ -298,8 +298,9 @@
 <body>
 
 <div class="app-container">
-    <h1>재고의 정도 자동 생성기</h1>
-    <p>기존 양식의 디자인과 서식(배경색, 선, 폰트)을 100% 보존한 상태에서 기초자료 데이터를 정확히 기입합니다.</p>
+    <header>
+        <h1>재고의 정도 자동 생성기</h1>
+        <p>기존 양식의 디자인과 서식(배경색, 선, 폰트)을 100% 보존한 상태에서 기초자료 데이터를 정확히 기입합니다.</p>
     </header>
 
     <div class="grid-layout">
@@ -591,9 +592,19 @@
                         purchase: {},
                         usage: {}
                     };
+                } else {
+                    if (!state.itemsMap[partNumber].name && nameColIdx !== -1) {
+                        state.itemsMap[partNumber].name = String(row[nameColIdx] || '').trim();
+                    }
+                    if (!state.itemsMap[partNumber].spec && specColIdx !== -1) {
+                        state.itemsMap[partNumber].spec = String(row[specColIdx] || '').trim();
+                    }
+                    if (!state.itemsMap[partNumber].manager && managerColIdx !== -1) {
+                        state.itemsMap[partNumber].manager = String(row[managerColIdx] || '').trim();
+                    }
                 }
 
-                state.itemsMap[partNumber].stock[monthObj.key] = qty;
+                state.itemsMap[partNumber].stock[monthObj.key] = (state.itemsMap[partNumber].stock[monthObj.key] || 0) + qty;
             }
         }
 
@@ -630,7 +641,6 @@
                     if (str.includes("품번") || str.includes("자재코드")) pNoColIdx = idx;
                     if (str.includes("매입수량") || str.includes("수량")) qtyColIdx = idx;
                     if (str.includes("매입단가") || str.includes("단가")) priceColIdx = idx;
-                    // 화폐/통화 컬럼 검색어 조건 고도화
                     if (str.includes("화폐") || str.includes("통화") || str.includes("currency") || str.includes("curr") || str.includes("단위")) currColIdx = idx;
                     if (str.includes("매입일자") || str.includes("일자")) dateColIdx = idx;
                 });
@@ -651,7 +661,6 @@
 
                 state.itemsMap[partNumber].purchase[monthObj.key] = (state.itemsMap[partNumber].purchase[monthObj.key] || 0) + qty;
 
-                // 유효한 단가 및 통화가 있을 때만 갱신
                 if (dateVal && dateVal > state.itemsMap[partNumber].latestPurchaseDate) {
                     state.itemsMap[partNumber].latestPurchaseDate = dateVal;
                     state.itemsMap[partNumber].unitPrice = price;
@@ -682,7 +691,6 @@
                     const str = String(cell).replace(/\s+/g, '');
                     if (str.includes("품번") || str.includes("자재코드")) pNoColIdx = idx;
                     if (str.includes("단가") || str.includes("기준단가")) priceColIdx = idx;
-                    // 화폐/통화 컬럼 검색어 조건 고도화
                     if (str.includes("화폐") || str.includes("통화") || str.includes("currency") || str.includes("curr") || str.includes("단위")) currColIdx = idx;
                 });
                 if (pNoColIdx !== -1 && priceColIdx !== -1) break;
@@ -694,10 +702,14 @@
                     const partNumber = String(row[pNoColIdx] || '').trim();
                     if (!partNumber || !state.itemsMap[partNumber]) continue;
 
+                    const price = parseFloat(row[priceColIdx] || 0);
+                    const currency = currColIdx !== -1 ? String(row[currColIdx] || '').trim().toUpperCase() : '';
                     if (state.itemsMap[partNumber].unitPrice === 0) {
-                        const price = parseFloat(row[priceColIdx] || 0);
-                        const currency = currColIdx !== -1 ? String(row[currColIdx] || '').trim().toUpperCase() : '';
                         state.itemsMap[partNumber].unitPrice = price;
+                        if (currency && currency !== '-') {
+                            state.itemsMap[partNumber].currency = currency;
+                        }
+                    } else if (state.itemsMap[partNumber].currency === 'KRW' || !state.itemsMap[partNumber].currency) {
                         if (currency && currency !== '-') {
                             state.itemsMap[partNumber].currency = currency;
                         }
@@ -731,7 +743,6 @@
         const latestMonthKey = state.monthKeys.find(m => m.index === 1).key; // 26년 3월 (index = 1)
         
         Object.values(state.itemsMap).forEach(item => {
-            // 통화 기본값 강제 매핑 및 JPY 등 환율 계산
             let rate = 1;
             const itemCurrency = (item.currency && item.currency !== '-') ? item.currency : 'KRW';
             
@@ -780,7 +791,7 @@
             }
         });
 
-        // 소요량이 있는 품목들을 AZ열 금액(total1YearCostYear) 기준 내림차순 정렬
+        // 소요량이 있는 품목들을 연간 소요금액(total1YearCostYear) 기준 내림차순 정렬
         validItems.sort((a, b) => b.total1YearCostYear - a.total1YearCostYear);
 
         // 등수 백분위 순위 산출 및 A, B, C 등급 맵핑
@@ -823,7 +834,10 @@
 
         logConsole("🔍 기본 양식의 헤더 및 병합 구조를 스캔합니다...");
 
-        row1.eachCell((cell, colIdx) => {
+        // row1.eachCell 대신 worksheet.columnCount를 통한 모든 열 스캔 (빈 셀/숨겨진 열 매치 유실 차단)
+        const colCount = worksheet.columnCount || 100;
+        for (let colIdx = 1; colIdx <= colCount; colIdx++) {
+            const cell = row1.getCell(colIdx);
             const val1 = String(cell.value || '').replace(/\s+/g, '');
             const val2 = String(row2.getCell(colIdx).value || '').replace(/\s+/g, '');
 
@@ -835,9 +849,13 @@
             else if (val1.includes("기준단가") || val1.includes("단가")) colMapping['unitPrice'] = colIdx;
             else if (val1.includes("당월소요금액")) colMapping['currentMonthUsageCost'] = colIdx;
             else if (val1.includes("최근1년소요량")) colMapping['total1YearQty'] = colIdx;
-            // 한자 '年' 자와 한글 '년' 둘 다 인식하도록 보강
-            else if (val1.includes("최근1년소요금액/연") || val1.includes("최근1년소요금액/年") || (val1.includes("소요금액") && (val1.includes("년") || val1.includes("年")))) colMapping['total1YearCostYear'] = colIdx;
-            else if (val1.includes("최근1년소요금액/월") || (val1.includes("소요금액") && val1.includes("월")) || val1.includes("소요금액/月")) colMapping['total1YearCostMonth'] = colIdx;
+            // 1년소요금액 월간/연간 분기 매핑 정교화
+            else if (val1.includes("최근1년소요금액/월") || val1.includes("최근1년소요금액/月") || (val1.includes("소요금액") && (val1.includes("월") || val1.includes("月")) && !val1.includes("당월"))) {
+                colMapping['total1YearCostMonth'] = colIdx;
+            }
+            else if (val1.includes("최근1년소요금액/연") || val1.includes("최근1년소요금액/年") || (val1.includes("소요금액") && (val1.includes("연") || val1.includes("年") || (val1.includes("년") && !val1.includes("월") && !val1.includes("月"))))) {
+                colMapping['total1YearCostYear'] = colIdx;
+            }
             else if (val1.includes("소요비율")) colMapping['usageRatio'] = colIdx;
             else if (val1.includes("품목등급") || val1.includes("등급")) colMapping['grade'] = colIdx;
 
@@ -859,70 +877,218 @@
                     colMapping[`stock_${monthOffset}`] = colIdx;
                 }
             }
-        });
+        }
 
+        logConsole("🔍 검출된 열 매핑 결과: " + JSON.stringify(colMapping));
         logConsole("📝 양식에 맞춰 품목별 데이터 셀 쓰기 및 서식 맵핑 중...");
 
-        let writeRowIdx = 3;
         const finalItemList = [...validItems, ...unusedItems];
+        let hasTemplateItems = false;
+        const partNumberColIdx = colMapping['partNumber'];
+        
+        // 템플릿의 3행에 기존 품번이 적재되어 있는지 검사
+        if (partNumberColIdx) {
+            const checkVal = worksheet.getRow(3).getCell(partNumberColIdx).value;
+            if (checkVal && String(checkVal).trim() !== '') {
+                hasTemplateItems = true;
+            }
+        }
 
-        finalItemList.forEach(item => {
-            const row = worksheet.getRow(writeRowIdx);
+        logConsole(hasTemplateItems 
+            ? "📋 기본 양식에 기존 품목 목록이 감지되었습니다. 템플릿 순서 및 행 번호를 그대로 매칭하여 데이터를 업데이트합니다." 
+            : "📝 기본 양식이 비어있습니다. 수불 계산 완료된 신규 품목 리스트를 순서대로 채워넣습니다."
+        );
 
-            const writeCell = (key, value, numFormat = null) => {
-                const colIdx = colMapping[key];
-                if (!colIdx) return;
-                const cell = row.getCell(colIdx);
-                cell.value = value;
-                if (numFormat) {
-                    cell.numFmt = numFormat;
+        if (hasTemplateItems) {
+            // 1. 기존 템플릿 품목 유지 업데이트 모드
+            const lastRowNumber = worksheet.lastRow ? worksheet.lastRow.number : 3;
+            const templatePartNumbers = new Set();
+
+            for (let r = 3; r <= lastRowNumber; r++) {
+                const row = worksheet.getRow(r);
+                const partNumberCell = row.getCell(partNumberColIdx);
+                const partNumber = String(partNumberCell.value || '').trim();
+                
+                if (!partNumber || partNumber === '합계' || partNumber === '총합계' || partNumber.includes('소계') || partNumber.includes('누계')) continue;
+                templatePartNumbers.add(partNumber);
+
+                let item = state.itemsMap[partNumber];
+                if (!item) {
+                    // 템플릿에는 정의되어 있으나 stock/실적이 전혀 없던 품목 예외 처리 (불용 및 숨김 기본값 부여)
+                    item = {
+                        partNumber,
+                        name: String(row.getCell(colMapping['name'] || 3).value || '').trim(),
+                        spec: String(row.getCell(colMapping['spec'] || 4).value || '').trim(),
+                        manager: String(row.getCell(colMapping['manager'] || 1).value || '').trim(),
+                        currency: String(row.getCell(colMapping['currency'] || 5).value || '').trim() || 'KRW',
+                        unitPrice: parseFloat(row.getCell(colMapping['unitPrice'] || 6).value || 0),
+                        latestPurchaseDate: '',
+                        stock: {},
+                        purchase: {},
+                        usage: {},
+                        total1YearQty: 0,
+                        total1YearCostYear: 0,
+                        total1YearCostMonth: 0,
+                        currentMonthUsageCost: 0,
+                        grade: '불용',
+                        usageRatio: 0,
+                        hidden: true
+                    };
                 }
-            };
 
-            // Basic info
-            writeCell('manager', item.manager);
-            writeCell('partNumber', item.partNumber);
-            writeCell('name', item.name);
-            writeCell('spec', item.spec);
-            
-            // 통화 기본값 보강 (비어있거나 하이픈일 시 KRW로 강제 덮어씀)
-            const finalCurrency = (item.currency && item.currency !== '-') ? item.currency : 'KRW';
-            writeCell('currency', finalCurrency);
-            
-            writeCell('unitPrice', item.unitPrice, '#,##0.00');
-            writeCell('currentMonthUsageCost', Math.round(item.currentMonthUsageCost), '#,##0');
+                const writeCell = (key, value, numFormat = null) => {
+                    const colIdx = colMapping[key];
+                    if (!colIdx) return;
+                    const cell = row.getCell(colIdx);
+                    cell.value = value;
+                    if (numFormat) {
+                        cell.numFmt = numFormat;
+                    }
+                };
 
-            // 1~13 Months data sets
-            for (let i = 1; i <= 13; i++) {
-                const monthObj = state.monthKeys.find(m => m.index === i);
-                if (monthObj) {
-                    writeCell(`purchase_${i}`, item.purchase[monthObj.key] || 0, '#,##0');
-                    writeCell(`usage_${i}`, item.usage[monthObj.key] || 0, '#,##0');
-                    writeCell(`stock_${i}`, item.stock[monthObj.key] || 0, '#,##0');
+                // 기본 정보 업데이트 (부족한 기본 사항은 보충)
+                if (item.manager) writeCell('manager', item.manager);
+                if (item.name) writeCell('name', item.name);
+                if (item.spec) writeCell('spec', item.spec);
+                
+                const finalCurrency = (item.currency && item.currency !== '-') ? item.currency : 'KRW';
+                writeCell('currency', finalCurrency);
+                writeCell('unitPrice', item.unitPrice, '#,##0.00');
+                writeCell('currentMonthUsageCost', Math.round(item.currentMonthUsageCost), '#,##0');
+
+                // 1~13개월 월별 실적 기입
+                for (let i = 1; i <= 13; i++) {
+                    const monthObj = state.monthKeys.find(m => m.index === i);
+                    if (monthObj) {
+                        writeCell(`purchase_${i}`, item.purchase[monthObj.key] || 0, '#,##0');
+                        writeCell(`usage_${i}`, item.usage[monthObj.key] || 0, '#,##0');
+                        writeCell(`stock_${i}`, item.stock[monthObj.key] || 0, '#,##0');
+                    }
+                }
+
+                // 종합 지표 기입
+                writeCell('total1YearQty', item.total1YearQty, '#,##0');
+                writeCell('total1YearCostYear', Math.round(item.total1YearCostYear), '#,##0');
+                writeCell('total1YearCostMonth', Math.round(item.total1YearCostMonth), '#,##0');
+                
+                if (item.grade === '불용') {
+                    writeCell('usageRatio', '');
+                } else {
+                    writeCell('usageRatio', item.usageRatio, '0.0%');
+                }
+                writeCell('grade', item.grade);
+
+                // 행 숨김 여부 적용
+                if (item.hidden === true) {
+                    row.hidden = true;
+                } else {
+                    row.hidden = false;
                 }
             }
 
-            // Summary Info
-            writeCell('total1YearQty', item.total1YearQty, '#,##0');
-            writeCell('total1YearCostYear', Math.round(item.total1YearCostYear), '#,##0');
-            writeCell('total1YearCostMonth', Math.round(item.total1YearCostMonth), '#,##0');
-            
-            if (item.grade === '불용') {
-                writeCell('usageRatio', '');
-            } else {
-                writeCell('usageRatio', item.usageRatio, '0.0%');
-            }
-            
-            writeCell('grade', item.grade);
+            // 템플릿에 등록되어 있지 않으나 기초 데이터에 실적이 있었던 active 품목이 존재할 경우 대비 하단에 안전 추가
+            let appendRowIdx = lastRowNumber + 1;
+            finalItemList.forEach(item => {
+                if (!templatePartNumbers.has(item.partNumber) && !item.hidden) {
+                    const row = worksheet.getRow(appendRowIdx);
+                    const writeCell = (key, value, numFormat = null) => {
+                        const colIdx = colMapping[key];
+                        if (!colIdx) return;
+                        const cell = row.getCell(colIdx);
+                        cell.value = value;
+                        if (numFormat) {
+                            cell.numFmt = numFormat;
+                        }
+                    };
 
-            if (item.hidden === true) {
-                row.hidden = true;
-            } else {
-                row.hidden = false;
-            }
+                    writeCell('manager', item.manager);
+                    writeCell('partNumber', item.partNumber);
+                    writeCell('name', item.name);
+                    writeCell('spec', item.spec);
+                    
+                    const finalCurrency = (item.currency && item.currency !== '-') ? item.currency : 'KRW';
+                    writeCell('currency', finalCurrency);
+                    writeCell('unitPrice', item.unitPrice, '#,##0.00');
+                    writeCell('currentMonthUsageCost', Math.round(item.currentMonthUsageCost), '#,##0');
 
-            writeRowIdx++;
-        });
+                    for (let i = 1; i <= 13; i++) {
+                        const monthObj = state.monthKeys.find(m => m.index === i);
+                        if (monthObj) {
+                            writeCell(`purchase_${i}`, item.purchase[monthObj.key] || 0, '#,##0');
+                            writeCell(`usage_${i}`, item.usage[monthObj.key] || 0, '#,##0');
+                            writeCell(`stock_${i}`, item.stock[monthObj.key] || 0, '#,##0');
+                        }
+                    }
+
+                    writeCell('total1YearQty', item.total1YearQty, '#,##0');
+                    writeCell('total1YearCostYear', Math.round(item.total1YearCostYear), '#,##0');
+                    writeCell('total1YearCostMonth', Math.round(item.total1YearCostMonth), '#,##0');
+                    
+                    if (item.grade === '불용') {
+                        writeCell('usageRatio', '');
+                    } else {
+                        writeCell('usageRatio', item.usageRatio, '0.0%');
+                    }
+                    writeCell('grade', item.grade);
+                    row.hidden = false;
+
+                    appendRowIdx++;
+                }
+            });
+        } else {
+            // 2. 템플릿에 데이터가 없었던 동적 기입 모드 (순차 작성)
+            let writeRowIdx = 3;
+            finalItemList.forEach(item => {
+                const row = worksheet.getRow(writeRowIdx);
+                const writeCell = (key, value, numFormat = null) => {
+                    const colIdx = colMapping[key];
+                    if (!colIdx) return;
+                    const cell = row.getCell(colIdx);
+                    cell.value = value;
+                    if (numFormat) {
+                        cell.numFmt = numFormat;
+                    }
+                };
+
+                writeCell('manager', item.manager);
+                writeCell('partNumber', item.partNumber);
+                writeCell('name', item.name);
+                writeCell('spec', item.spec);
+                
+                const finalCurrency = (item.currency && item.currency !== '-') ? item.currency : 'KRW';
+                writeCell('currency', finalCurrency);
+                writeCell('unitPrice', item.unitPrice, '#,##0.00');
+                writeCell('currentMonthUsageCost', Math.round(item.currentMonthUsageCost), '#,##0');
+
+                for (let i = 1; i <= 13; i++) {
+                    const monthObj = state.monthKeys.find(m => m.index === i);
+                    if (monthObj) {
+                        writeCell(`purchase_${i}`, item.purchase[monthObj.key] || 0, '#,##0');
+                        writeCell(`usage_${i}`, item.usage[monthObj.key] || 0, '#,##0');
+                        writeCell(`stock_${i}`, item.stock[monthObj.key] || 0, '#,##0');
+                    }
+                }
+
+                writeCell('total1YearQty', item.total1YearQty, '#,##0');
+                writeCell('total1YearCostYear', Math.round(item.total1YearCostYear), '#,##0');
+                writeCell('total1YearCostMonth', Math.round(item.total1YearCostMonth), '#,##0');
+                
+                if (item.grade === '불용') {
+                    writeCell('usageRatio', '');
+                } else {
+                    writeCell('usageRatio', item.usageRatio, '0.0%');
+                }
+                writeCell('grade', item.grade);
+
+                if (item.hidden === true) {
+                    row.hidden = true;
+                } else {
+                    row.hidden = false;
+                }
+
+                writeRowIdx++;
+            });
+        }
 
         // Trigger file download
         logConsole("💾 가공된 결과 엑셀 바이너리 파일 다운로드 실행...");
