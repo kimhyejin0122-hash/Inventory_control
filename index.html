@@ -397,6 +397,23 @@
 </div>
 
 <script>
+    // Currency cleaning helper
+    function cleanCurrency(rawCurrency) {
+        if (rawCurrency === undefined || rawCurrency === null) return '';
+        let clean = String(rawCurrency).trim().toUpperCase();
+        // 3-letter currency code extract (e.g. USD, KRW, JPY, EUR)
+        const match = clean.match(/[A-Z]{3}/);
+        if (match) {
+            return match[0];
+        }
+        // Fallback for special characters/names
+        if (clean.includes('$') || clean.includes('USD')) return 'USD';
+        if (clean.includes('円') || clean.includes('￥') || clean.includes('JPY')) return 'JPY';
+        if (clean.includes('EUR')) return 'EUR';
+        if (clean.includes('KRW') || clean.includes('원')) return 'KRW';
+        return clean;
+    }
+
     // State storage
     const state = {
         templateFile: null,
@@ -656,7 +673,7 @@
 
                 const qty = parseFloat(row[qtyColIdx] || 0);
                 const price = parseFloat(row[priceColIdx] || 0);
-                const currency = currColIdx !== -1 ? String(row[currColIdx] || '').trim().toUpperCase() : '';
+                const currency = currColIdx !== -1 ? cleanCurrency(row[currColIdx]) : '';
                 const dateVal = dateColIdx !== -1 ? String(row[dateColIdx] || '') : '';
 
                 state.itemsMap[partNumber].purchase[monthObj.key] = (state.itemsMap[partNumber].purchase[monthObj.key] || 0) + qty;
@@ -703,7 +720,7 @@
                     if (!partNumber || !state.itemsMap[partNumber]) continue;
 
                     const price = parseFloat(row[priceColIdx] || 0);
-                    const currency = currColIdx !== -1 ? String(row[currColIdx] || '').trim().toUpperCase() : '';
+                    const currency = currColIdx !== -1 ? cleanCurrency(row[currColIdx]) : '';
                     if (state.itemsMap[partNumber].unitPrice === 0) {
                         state.itemsMap[partNumber].unitPrice = price;
                         if (currency && currency !== '-') {
