@@ -602,7 +602,7 @@
                         maker: '',
                         makerPn: '',
                         manager: managerColIdx !== -1 ? String(row[managerColIdx] || '').trim() : '',
-                        currency: 'KRW',
+                        currency: '',
                         unitPrice: 0,
                         latestPurchaseDate: '',
                         stock: {},
@@ -726,7 +726,7 @@
                         if (currency && currency !== '-') {
                             state.itemsMap[partNumber].currency = currency;
                         }
-                    } else if (state.itemsMap[partNumber].currency === 'KRW' || !state.itemsMap[partNumber].currency) {
+                    } else if (!state.itemsMap[partNumber].currency) {
                         if (currency && currency !== '-') {
                             state.itemsMap[partNumber].currency = currency;
                         }
