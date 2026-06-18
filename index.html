@@ -10,18 +10,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --panel-bg: rgba(30, 41, 59, 0.7);
-            --panel-border: rgba(255, 255, 255, 0.08);
-            --primary: #3b82f6;
-            --primary-glow: rgba(59, 130, 246, 0.3);
-            --success: #10b981;
-            --success-glow: rgba(16, 185, 129, 0.3);
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --card-hover: rgba(255, 255, 255, 0.03);
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            --panel-bg: rgba(255, 255, 255, 0.85);
+            --panel-border: rgba(15, 23, 42, 0.08);
+            --primary: #2563eb;
+            --primary-glow: rgba(37, 99, 235, 0.15);
+            --success: #059669;
+            --success-glow: rgba(5, 150, 105, 0.15);
+            --warning: #d97706;
+            --danger: #dc2626;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --card-hover: rgba(15, 23, 42, 0.02);
+
+            /* 대시보드 라이트 모드 전용 */
+            --dashboard-bg: #ffffff;
+            --dashboard-card-bg: #f8fafc;
+            --border-light: #e2e8f0;
         }
 
         body {
@@ -32,6 +37,7 @@
             padding: 2rem;
             min-height: 100vh;
             box-sizing: border-box;
+            transition: background 0.3s, color 0.3s;
         }
 
         .app-container {
@@ -49,10 +55,10 @@
             font-weight: 800;
             letter-spacing: -0.05em;
             margin: 0 0 0.5rem 0;
-            background: linear-gradient(to right, #60a5fa, #a78bfa, #34d399);
+            background: linear-gradient(to right, #1e3a8a, #4f46e5, #0d9488);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 10px 30px rgba(96, 165, 250, 0.2);
+            text-shadow: 0 10px 30px rgba(79, 70, 229, 0.15);
         }
 
         header p {
@@ -79,7 +85,7 @@
             border-radius: 24px;
             padding: 2.5rem;
             backdrop-filter: blur(20px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
         }
 
         .sidebar-panel {
@@ -88,7 +94,7 @@
             border-radius: 24px;
             padding: 2rem;
             backdrop-filter: blur(20px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
@@ -103,12 +109,12 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            color: #60a5fa;
+            color: #1e3a8a;
         }
 
         .dropzone-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -120,8 +126,8 @@
         }
 
         .dropcard {
-            border: 2px dashed rgba(255, 255, 255, 0.1);
-            background: rgba(15, 23, 42, 0.3);
+            border: 2px dashed rgba(15, 23, 42, 0.1);
+            background: rgba(255, 255, 255, 0.5);
             border-radius: 16px;
             padding: 2rem 1rem;
             text-align: center;
@@ -129,23 +135,24 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            color: var(--text-main);
         }
 
         .dropcard:hover {
             border-color: var(--primary);
-            background: rgba(59, 130, 246, 0.04);
+            background: rgba(37, 99, 235, 0.04);
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.08);
         }
 
         .dropcard.active {
             border-color: var(--success);
-            background: rgba(16, 185, 129, 0.05);
+            background: rgba(5, 150, 105, 0.04);
         }
 
         .dropcard.dragover {
             border-color: var(--primary);
-            background: rgba(59, 130, 246, 0.08);
+            background: rgba(37, 99, 235, 0.08);
             scale: 1.02;
         }
 
@@ -173,7 +180,7 @@
         .file-list {
             margin-top: 1rem;
             font-size: 0.82rem;
-            color: #34d399;
+            color: #059669;
             text-align: left;
             max-height: 80px;
             overflow-y: auto;
@@ -184,7 +191,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(5, 150, 105, 0.08);
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
             margin-top: 0.25rem;
@@ -203,8 +210,8 @@
         }
 
         .input-group input {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(15, 23, 42, 0.15);
             color: var(--text-main);
             padding: 0.75rem 1rem;
             border-radius: 8px;
@@ -219,7 +226,7 @@
         }
 
         .btn-action {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: white;
             border: none;
             padding: 1rem 1.5rem;
@@ -228,7 +235,7 @@
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 10px 20px rgba(3b, 82, 246, 0.2);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.15);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -237,11 +244,11 @@
 
         .btn-action:hover {
             transform: translateY(-2px);
-            box-shadow: 0 15px 25px rgba(3b, 82, 246, 0.35);
+            box-shadow: 0 15px 25px rgba(37, 99, 235, 0.25);
         }
 
         .btn-action:disabled {
-            background: #475569;
+            background: #cbd5e1;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
@@ -249,13 +256,13 @@
         }
 
         .status-panel {
-            background: rgba(15, 23, 42, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(15, 23, 42, 0.04);
+            border: 1px solid rgba(15, 23, 42, 0.06);
             border-radius: 12px;
             padding: 1rem;
             font-family: monospace;
             font-size: 0.82rem;
-            color: #cbd5e1;
+            color: #1e293b;
             height: 180px;
             overflow-y: auto;
             white-space: pre-wrap;
@@ -269,8 +276,8 @@
         }
 
         .dash-card {
-            background: rgba(15, 23, 42, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(15, 23, 42, 0.03);
+            border: 1px solid rgba(15, 23, 42, 0.06);
             border-radius: 12px;
             padding: 1.25rem;
             text-align: center;
@@ -279,7 +286,7 @@
         .dash-card-val {
             font-size: 1.8rem;
             font-weight: 800;
-            color: #38bdf8;
+            color: #2563eb;
             margin-bottom: 0.25rem;
         }
 
@@ -293,11 +300,515 @@
         .hidden-input {
             display: none;
         }
+
+        /* ==================== 대시보드 뷰 전용 스타일 ==================== */
+        .dashboard-container {
+            max-width: 1360px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0;
+            background: linear-gradient(to right, #1e3a8a, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            transform: translateY(-1px);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 담당자 필터 사이드바 */
+        .filter-sidebar {
+            background: var(--dashboard-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: fit-content;
+        }
+
+        .filter-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .filter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .filter-btn {
+            background: none;
+            border: 1px solid transparent;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-btn:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-glow);
+            color: var(--primary);
+            border-color: rgba(37, 99, 235, 0.1);
+        }
+
+        .badge-count {
+            background: rgba(0, 0, 0, 0.05);
+            color: #475569;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .filter-btn.active .badge-count {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* 대시보드 콘텐츠 */
+        .dashboard-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .summary-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 가로 막대 그래프 스타일 */
+        .bar-chart-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            padding: 0.5rem 0;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.92rem;
+            transition: all 0.2s ease;
+        }
+
+        .bar-label {
+            width: 80px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+        }
+
+        .bar-track {
+            flex: 1;
+            height: 24px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            overflow: visible;
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+        }
+
+        .bar-target-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            border-left: 2px dashed #dc2626;
+            z-index: 5;
+            transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bar-target-badge {
+            position: absolute;
+            top: -18px;
+            transform: translateX(-50%);
+            font-size: 0.68rem;
+            background: #dc2626;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-weight: 700;
+            white-space: nowrap;
+            z-index: 6;
+            pointer-events: none;
+            opacity: 0.9;
+            transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bar-value {
+            width: 85px;
+            text-align: right;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .summary-card {
+            background: var(--dashboard-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 1.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .summary-card h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 요약 테이블 스타일 */
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        .summary-table th, .summary-table td {
+            padding: 0.75rem 1rem;
+            text-align: right;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .summary-table th {
+            font-weight: 600;
+            color: #475569;
+            background: #f8fafc;
+        }
+
+        .summary-table th:first-child, .summary-table td:first-child {
+            text-align: left;
+            font-weight: 700;
+        }
+
+        .summary-table tr:hover td {
+            background: rgba(0, 0, 0, 0.01);
+        }
+
+        /* 등급 뱃지 스타일 */
+        .badge-grade {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .badge-grade.A { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+        .badge-grade.B { background: rgba(13, 148, 136, 0.1); color: #0d9488; }
+        .badge-grade.C { background: rgba(217, 119, 6, 0.1); color: #d97706; }
+        .badge-grade.unused { background: rgba(100, 116, 139, 0.1); color: #64748b; }
+
+        /* 도넛 그래프 스타일 */
+        .chart-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            padding: 0.5rem 0;
+        }
+
+        .donut-chart {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .donut-hole {
+            width: 110px;
+            height: 110px;
+            background: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .donut-label-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .donut-label-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
+        }
+
+        .chart-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.88rem;
+            color: #475569;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+        }
+
+        /* 리스트 검색 패널 */
+        .list-card {
+            background: var(--dashboard-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 1.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .list-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .search-wrapper {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: var(--text-main);
+            padding: 0.65rem 1rem 0.65rem 2.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            pointer-events: none;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            max-height: 480px;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        .data-table th {
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            padding: 0.85rem 1rem;
+            border-bottom: 2px solid var(--border-light);
+            z-index: 10;
+        }
+
+        .data-table td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-light);
+            color: #1e293b;
+        }
+
+        .data-table tbody tr:hover td {
+            background: #f8fafc;
+        }
+
+        .data-table .num-cell {
+            text-align: right;
+        }
+
+        /* 페이징 내비게이션 스타일 */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            padding: 0.5rem 0;
+        }
+
+        .page-btn {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 0.45rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            color: #1e293b;
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin: 0 0.75rem;
+        }
     </style>
 </head>
 <body>
 
-<div class="app-container">
+<!-- 초기 입력 화면 뷰 (기존 구조 100% 유지) -->
+<div id="input-view" class="app-container">
     <header>
         <h1>재고의 정도 자동 생성기</h1>
         <p>기존 양식의 디자인과 서식(배경색, 선, 폰트)을 100% 보존한 상태에서 기초자료 데이터를 정확히 기입합니다.</p>
@@ -343,6 +854,15 @@
                     <div class="dropcard-sub">사내재고현황_25년03월~26년03월 드롭</div>
                     <div class="file-list" id="list-stock"></div>
                     <input type="file" id="input-stock" class="hidden-input" accept=".xls,.xlsx" multiple>
+                </div>
+
+                <!-- 5. 목표재고일수 -->
+                <div class="dropcard" id="drop-target-days">
+                    <div class="dropcard-icon">🎯</div>
+                    <div class="dropcard-title">담당자별 목표 재고 일수</div>
+                    <div class="dropcard-sub">담당자별 목표 재고 일수.xlsx 업로드 (선택)</div>
+                    <div class="file-list" id="list-target-days"></div>
+                    <input type="file" id="input-target-days" class="hidden-input" accept=".xlsx">
                 </div>
             </div>
 
@@ -396,7 +916,133 @@
     </div>
 </div>
 
+<!-- 결과 대시보드 화면 뷰 (SPA 전환용 라이트 모드 대시보드) -->
+<div id="dashboard-view" style="display: none; padding: 1rem 0;">
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>재고의 정도 결과 대시보드</h1>
+            <div class="header-buttons">
+                <button class="btn-secondary" id="btn-reset">
+                    <span>🔄 다시 업로드</span>
+                </button>
+                <button class="btn-action" id="btn-download" style="padding: 0.75rem 1.5rem; box-shadow: none;">
+                    <span>📥 엑셀 다운로드</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- 좌측 담당자 필터 -->
+            <aside class="filter-sidebar">
+                <h3 class="filter-title">품목담당자 선택</h3>
+                <div class="filter-list" id="filter-manager-list">
+                    <!-- JS 동적 생성 -->
+                </div>
+            </aside>
+
+            <!-- 우측 대시보드 상세 -->
+            <main class="dashboard-content">
+                <div class="summary-row">
+                    <!-- 등급별 요약 테이블 -->
+                    <div class="summary-card">
+                        <h2>📊 등급별 요약 통계</h2>
+                        <table class="summary-table">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left;">등급</th>
+                                    <th>품목 수</th>
+                                    <th>월평균 소요금액 (원)</th>
+                                    <th>소요 비중</th>
+                                    <th>재고 금액 (원)</th>
+                                    <th>재고 비중</th>
+                                    <th>실제 재고 회전 일수</th>
+                                    <th>목표 재고 일수</th>
+                                    <th>달성률</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summary-table-body">
+                                <!-- JS 동적 생성 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <!-- 재고 회전 일수 가로 막대 그래프 -->
+                    <div class="summary-card">
+                        <h2>📊 등급별 재고 회전 일수</h2>
+                        <div class="bar-chart-container" id="rotation-bar-chart">
+                            <!-- JS 동적 생성 -->
+                        </div>
+                    </div>
+
+                    <!-- 재고금액 비중 원형 그래프 -->
+                    <div class="summary-card">
+                        <h2>📦 등급별 재고금액 비중</h2>
+                        <div class="chart-wrapper">
+                            <div class="donut-chart" id="donut-stock-chart-element">
+                                <div class="donut-hole">
+                                    <span class="donut-label-value" id="donut-stock-center-value">0%</span>
+                                    <span class="donut-label-text" id="donut-stock-center-label">A 등급</span>
+                                </div>
+                            </div>
+                            <div class="chart-legend" id="chart-stock-legend-list">
+                                <!-- JS 동적 생성 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 상세 리스트 검색 -->
+                <div class="list-card">
+                    <div class="list-header-row">
+                        <h2 style="margin: 0; color: var(--text-main);">📋 상세 품목 리스트</h2>
+                        <div class="search-wrapper">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="search-keyword" class="search-input" placeholder="품번 또는 품명으로 검색...">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>품번</th>
+                                    <th>품명</th>
+                                    <th>규격</th>
+                                    <th>담당자</th>
+                                    <th>등급</th>
+                                    <th class="num-cell">최근 1년 소요량</th>
+                                    <th class="num-cell">최근 1년 소요금액/月(원)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detail-table-body">
+                                <!-- JS 동적 생성 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- 페이징 버튼 컨테이너 -->
+                    <div id="pagination-controls" class="pagination-container"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
 <script>
+    // 페이지 로드 시 LocalStorage에서 설정 값 복원
+    document.addEventListener("DOMContentLoaded", () => {
+        if (localStorage.getItem('rate_jpy')) document.getElementById('rate-jpy').value = localStorage.getItem('rate_jpy');
+        if (localStorage.getItem('rate_usd')) document.getElementById('rate-usd').value = localStorage.getItem('rate_usd');
+        if (localStorage.getItem('rate_eur')) document.getElementById('rate-eur').value = localStorage.getItem('rate_eur');
+        if (localStorage.getItem('target_month')) document.getElementById('target-month').value = localStorage.getItem('target_month');
+    });
+
+    // 입력 설정 값 변경 시 LocalStorage에 즉시 저장
+    document.getElementById('rate-jpy').addEventListener('input', (e) => localStorage.setItem('rate_jpy', e.target.value));
+    document.getElementById('rate-usd').addEventListener('input', (e) => localStorage.setItem('rate_usd', e.target.value));
+    document.getElementById('rate-eur').addEventListener('input', (e) => localStorage.setItem('rate_eur', e.target.value));
+    document.getElementById('target-month').addEventListener('change', (e) => localStorage.setItem('target_month', e.target.value));
+
     // Currency cleaning helper
     function cleanCurrency(rawCurrency) {
         if (rawCurrency === undefined || rawCurrency === null) return '';
@@ -420,8 +1066,22 @@
         priceFile: null,
         purchaseFiles: [],
         stockFiles: [],
+        targetDaysFile: null,
+        targetDaysMap: {},
         itemsMap: {},
-        monthKeys: []
+        monthKeys: [],
+        
+        // 결과 대시보드 상태 전용 속성 추가
+        validItems: [],
+        unusedItems: [],
+        colMapping: {},
+        processedWorkbook: null,
+        selectedManager: '전체',
+        searchQuery: '',
+
+        // 페이징 속성 추가
+        currentPage: 1,
+        itemsPerPage: 50
     };
 
     // UI elements
@@ -429,20 +1089,30 @@
     const dropPrice = document.getElementById('drop-price');
     const dropPurchase = document.getElementById('drop-purchase');
     const dropStock = document.getElementById('drop-stock');
+    const dropTargetDays = document.getElementById('drop-target-days');
 
     const inputTemplate = document.getElementById('input-template');
     const inputPrice = document.getElementById('input-price');
     const inputPurchase = document.getElementById('input-purchase');
     const inputStock = document.getElementById('input-stock');
+    const inputTargetDays = document.getElementById('input-target-days');
 
     const listTemplate = document.getElementById('list-template');
     const listPrice = document.getElementById('list-price');
     const listPurchase = document.getElementById('list-purchase');
     const listStock = document.getElementById('list-stock');
+    const listTargetDays = document.getElementById('list-target-days');
 
     const consoleLog = document.getElementById('console-log');
     const btnGenerate = document.getElementById('btn-generate');
     const dashboard = document.getElementById('dashboard');
+
+    // 대시보드 뷰 전용 엘리먼트 바인딩
+    const inputView = document.getElementById('input-view');
+    const dashboardView = document.getElementById('dashboard-view');
+    const btnReset = document.getElementById('btn-reset');
+    const btnDownload = document.getElementById('btn-download');
+    const searchKeyword = document.getElementById('search-keyword');
 
     setupDragDrop(dropTemplate, inputTemplate, (file) => {
         state.templateFile = file;
@@ -469,8 +1139,37 @@
         state.stockFiles = Array.from(files);
         listStock.innerHTML = state.stockFiles.map(f => `<div class="file-item"><span>${f.name}</span></div>`).join('');
         logConsole(`사내재고현황 ${state.stockFiles.length}개 등록 완료`);
+        
+        // 최신월 자동 감지 및 설정 기능 실행
+        detectAndSetLatestMonth(state.stockFiles);
+        
         checkReady();
     }, true);
+
+    setupDragDrop(dropTargetDays, inputTargetDays, (file) => {
+        state.targetDaysFile = file;
+        listTargetDays.innerHTML = `<div class="file-item"><span>${file.name}</span></div>`;
+        logConsole(`목표재고일수 등록 완료: ${file.name}`);
+        checkReady();
+    });
+
+    // 사내재고현황 파일명 기반 최신 월 감지 및 자동 설정 헬퍼
+    function detectAndSetLatestMonth(files) {
+        let maxMonth = null;
+        files.forEach(file => {
+            const dateInfo = parseFileNameMonth(file.name, "사내재고현황");
+            if (dateInfo) {
+                if (!maxMonth || dateInfo > maxMonth) {
+                    maxMonth = dateInfo;
+                }
+            }
+        });
+        if (maxMonth) {
+            document.getElementById('target-month').value = maxMonth;
+            localStorage.setItem('target_month', maxMonth);
+            logConsole(`📅 파일 분석 결과, 가장 최신 월인 [${maxMonth}]로 분석 기준월이 자동 세팅되었습니다.`);
+        }
+    }
 
     function setupDragDrop(zone, input, callback, multiple = false) {
         zone.addEventListener('click', () => input.click());
@@ -519,6 +1218,7 @@
             await runProcess();
         } catch (err) {
             logConsole(`❌ 처리 실패: ${err.message}`);
+            alert(`⚠️ 데이터 분석 가공 중 오류가 발생했습니다.\n\n[오류 원인]\n${err.message}\n\n엑셀 파일의 열 이름이나 손상 여부를 확인해 주세요.`);
             console.error(err);
         } finally {
             btnGenerate.disabled = false;
@@ -585,7 +1285,9 @@
                 if (pNoColIdx !== -1 && qtyColIdx !== -1) break;
             }
 
-            if (pNoColIdx === -1 || qtyColIdx === -1) continue;
+            if (pNoColIdx === -1 || qtyColIdx === -1) {
+                throw new Error(`사내재고현황 파일 [${file.name}] 내에 필수 열('품번/자재코드' 또는 '현재고/재고수량/기말재고')이 누락되었거나 컬럼 헤더명이 맞지 않습니다.`);
+            }
 
             for (let r = 2; r < json.length; r++) {
                 const row = json[r];
@@ -664,7 +1366,9 @@
                 if (pNoColIdx !== -1 && qtyColIdx !== -1) break;
             }
 
-            if (pNoColIdx === -1 || qtyColIdx === -1) continue;
+            if (pNoColIdx === -1 || qtyColIdx === -1) {
+                throw new Error(`매입원장 파일 [${file.name}] 내에 필수 열('품번/자재코드' 또는 '매입수량/수량')이 누락되었거나 컬럼 헤더명이 맞지 않습니다.`);
+            }
 
             for (let r = 2; r < json.length; r++) {
                 const row = json[r];
@@ -713,6 +1417,10 @@
                 if (pNoColIdx !== -1 && priceColIdx !== -1) break;
             }
 
+            if (pNoColIdx === -1 || priceColIdx === -1) {
+                throw new Error(`품목기준단가 파일 [${state.priceFile.name}] 내에 필수 열('품번/자재코드' 또는 '단가/기준단가')이 누락되었거나 컬럼 헤더명이 맞지 않습니다.`);
+            }
+
             if (pNoColIdx !== -1 && priceColIdx !== -1) {
                 for (let r = 1; r < json.length; r++) {
                     const row = json[r];
@@ -733,6 +1441,138 @@
                     }
                 }
             }
+        }
+
+        // 4-2. Parse Target Days (담당자별 목표 재고 일수 - 선택 사항)
+        state.targetDaysMap = {};
+        if (state.targetDaysFile) {
+            logConsole("🎯 담당자별 목표 재고 일수 파일 파싱 중...");
+            const data = await readFileAsArray(state.targetDaysFile);
+            const wb = XLSX.read(data, {type: 'array'});
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(ws, {header: 1});
+
+            let managerColIdx = -1, gradeColIdx = -1, targetDaysColIdx = -1;
+            let aTargetColIdx = -1, bTargetColIdx = -1, cTargetColIdx = -1;
+            let headerRowIndex = 0;
+
+            // 각 행별로 독립 스캔하여 컬럼 중복이 없고 정합성이 뛰어난 행을 헤더 행으로 선별
+            for (let r = 0; r < Math.min(json.length, 20); r++) {
+                const row = json[r];
+                if (!row || row.length === 0) continue;
+                
+                let tempManagerIdx = -1;
+                let tempGradeIdx = -1;
+                let tempTargetIdx = -1;
+                let tempAIdx = -1;
+                let tempBIdx = -1;
+                let tempCIdx = -1;
+
+                row.forEach((cell, idx) => {
+                    const str = String(cell || '').replace(/\s+/g, '');
+                    if (!str) return;
+
+                    // 긴 제목 셀(예: "담당자별 목표 재고 일수 현황")에 키워드가 겹쳐서 오감지되는 현상 방지
+                    if (str.length > 8 && str.includes("담당자") && (str.includes("목표") || str.includes("일수"))) {
+                        return;
+                    }
+
+                    if (str.includes("담당자") || str.includes("이름") || str.includes("담당자명") || str === '담당') {
+                        tempManagerIdx = idx;
+                    }
+                    if ((str.includes("등급") || str === '구분' || str === '분류') && !str.includes("목표") && !str.includes("일수")) {
+                        tempGradeIdx = idx;
+                    }
+                    if ((str.includes("목표") || str.includes("일수") || str.includes("목표일")) && !str.match(/[ABC]/)) {
+                        tempTargetIdx = idx;
+                    }
+                    
+                    if (str === 'A' || str === 'A등급' || str === 'A목표' || str === 'A등급목표' || (str.includes('A') && (str.includes('목표') || str.includes('일수') || str.includes('등급')))) {
+                        tempAIdx = idx;
+                    }
+                    if (str === 'B' || str === 'B등급' || str === 'B목표' || str === 'B등급목표' || (str.includes('B') && (str.includes('목표') || str.includes('일수') || str.includes('등급')))) {
+                        tempBIdx = idx;
+                    }
+                    if (str === 'C' || str === 'C등급' || str === 'C목표' || str === 'C등급목표' || (str.includes('C') && (str.includes('목표') || str.includes('일수') || str.includes('등급')))) {
+                        tempCIdx = idx;
+                    }
+                });
+
+                // 수직(종적) 혹은 수평(횡적) 헤더의 정합성 확인 (컬럼 인덱스 중복 방지)
+                const isVerticalValid = tempManagerIdx !== -1 && tempTargetIdx !== -1 && tempManagerIdx !== tempTargetIdx;
+                const isHorizontalValid = tempManagerIdx !== -1 && tempAIdx !== -1 && tempBIdx !== -1 && tempCIdx !== -1 &&
+                                          (new Set([tempManagerIdx, tempAIdx, tempBIdx, tempCIdx]).size === 4);
+
+                if (isVerticalValid || isHorizontalValid) {
+                    managerColIdx = tempManagerIdx;
+                    gradeColIdx = tempGradeIdx;
+                    targetDaysColIdx = tempTargetIdx;
+                    aTargetColIdx = tempAIdx;
+                    bTargetColIdx = tempBIdx;
+                    cTargetColIdx = tempCIdx;
+                    headerRowIndex = r;
+                    logConsole(`🎯 목표 재고 일수 헤더 감지 성공: [행 번호: ${r + 1}] (${isVerticalValid ? '종적(등급구분형)' : '횡적(등급나열형)'} 구조)`);
+                    break;
+                }
+            }
+
+            if (managerColIdx === -1) {
+                logConsole("⚠️ 목표 재고 일수 파일 파싱 경고: '담당자/이름' 헤더를 감지할 수 없습니다. 엑셀의 헤더 열 이름(담당자, A, B, C 등)을 다시 확인해 주세요.");
+                // 디버깅을 위해 상위 행 데이터 구조 일부 노출
+                for (let r = 0; r < Math.min(json.length, 5); r++) {
+                    logConsole(`   [디버그 행 ${r + 1}] ${JSON.stringify(json[r])}`);
+                }
+            } else {
+                logConsole(`🔍 헤더 매핑 상세 - 담당자열: ${managerColIdx}, A목표열: ${aTargetColIdx}, B목표열: ${bTargetColIdx}, C목표열: ${cTargetColIdx}, 등급구분열: ${gradeColIdx}, 목표일수열: ${targetDaysColIdx}`);
+                
+                // 데이터는 감지된 헤더 다음 행부터 파싱
+                let rowCount = 0;
+                for (let r = headerRowIndex + 1; r < json.length; r++) {
+                    const row = json[r];
+                    if (!row || row.length === 0) continue;
+                    const manager = String(row[managerColIdx] || '').trim();
+                    if (!manager || manager === '합계' || manager === '총합계') continue;
+
+                    // 담당자 이름의 공백 제거 및 소문자화
+                    const cleanMgr = manager.replace(/\s+/g, '').toLowerCase();
+
+                    // 구조 A (종적 매핑)
+                    if (gradeColIdx !== -1 && targetDaysColIdx !== -1) {
+                        const gradeRaw = String(row[gradeColIdx] || '').trim();
+                        let grade = '';
+                        if (gradeRaw.includes('A')) grade = 'A';
+                        else if (gradeRaw.includes('B')) grade = 'B';
+                        else if (gradeRaw.includes('C')) grade = 'C';
+                        else if (gradeRaw.includes('불용')) grade = '불용';
+
+                        const targetVal = parseFloat(row[targetDaysColIdx] || 0);
+                        if (grade && targetVal > 0) {
+                            state.targetDaysMap[`${cleanMgr}_${grade}`] = targetVal;
+                            rowCount++;
+                        }
+                    }
+                    // 구조 B (횡적 매핑)
+                    else {
+                        if (aTargetColIdx !== -1) {
+                            const val = parseFloat(row[aTargetColIdx] || 0);
+                            if (val > 0) { state.targetDaysMap[`${cleanMgr}_A`] = val; rowCount++; }
+                        }
+                        if (bTargetColIdx !== -1) {
+                            const val = parseFloat(row[bTargetColIdx] || 0);
+                            if (val > 0) { state.targetDaysMap[`${cleanMgr}_B`] = val; rowCount++; }
+                        }
+                        if (cTargetColIdx !== -1) {
+                            const val = parseFloat(row[cTargetColIdx] || 0);
+                            if (val > 0) { state.targetDaysMap[`${cleanMgr}_C`] = val; rowCount++; }
+                        }
+                    }
+                }
+                logConsole(`🎯 목표 재고 일수 연동 완료! 총 ${Object.keys(state.targetDaysMap).length}개의 담당자별 등급 매핑 적재됨.`);
+                const sampleKeys = Object.keys(state.targetDaysMap).slice(0, 5);
+                logConsole(`🔍 로드된 담당자 매핑 샘플: ${sampleKeys.join(', ')}`);
+            }
+        } else {
+            logConsole("ℹ️ 목표 재고 일수 파일이 업로드되지 않았습니다. 기본 기능으로만 동작합니다.");
         }
 
         // 5. Calculate monthly Usage
@@ -779,6 +1619,10 @@
 
             const currentMonthUsageQty = item.usage[latestMonthKey] || 0;
             item.currentMonthUsageCost = currentMonthUsageQty * finalKRWPrice;
+
+            // 최신 기준 재고 금액 산출
+            const currentStock = item.stock[latestMonthKey] || 0;
+            item.totalStockCost = currentStock * finalKRWPrice;
         });
 
         // ABC 등급 분류 (줄세우기 백분위 방식)
@@ -1107,14 +1951,650 @@
             });
         }
 
-        // Trigger file download
-        logConsole("💾 가공된 결과 엑셀 바이너리 파일 다운로드 실행...");
-        const buffer = await workbook.xlsx.writeBuffer();
-        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        saveAs(blob, "26년3월 구매팀 재고금액.xlsx");
+        // 다운로드 대신 가공 완료 데이터와 템플릿 workbook을 보존하고 대시보드로 화면 전환
+        state.validItems = validItems;
+        state.unusedItems = unusedItems;
+        state.colMapping = colMapping;
+        state.processedWorkbook = workbook;
+        state.selectedManager = '전체';
+        state.searchQuery = '';
 
-        logConsole("🎉 성공! 기존 템플릿의 예쁜 디자인과 스타일이 그대로 보존된 최종 엑셀 파일을 다운로드했습니다.");
+        logConsole("🎉 수불 및 재고의정도 계산이 완료되었습니다!");
+        
+        // 대시보드로 화면 전환 (SPA 방식)
+        setTimeout(() => {
+            inputView.style.display = 'none';
+            dashboardView.style.display = 'block';
+            renderDashboard();
+        }, 800);
     }
+
+    // 대시보드 렌더링 함수
+    function renderDashboard() {
+        const allItems = [...state.validItems, ...state.unusedItems].filter(item => !item.hidden);
+        
+        // 1. 담당자 목록 유일값 스캔 및 항목 개수 집계
+        const managerCounts = { '전체': allItems.length };
+        allItems.forEach(item => {
+            const mgr = item.manager || '미지정';
+            managerCounts[mgr] = (managerCounts[mgr] || 0) + 1;
+        });
+
+        // 좌측 필터 탭 생성
+        const filterListEl = document.getElementById('filter-manager-list');
+        filterListEl.innerHTML = '';
+        
+        const managers = Object.keys(managerCounts).filter(m => m !== '전체').sort();
+        managers.unshift('전체');
+
+        managers.forEach(mgr => {
+            const btn = document.createElement('button');
+            btn.className = `filter-btn ${state.selectedManager === mgr ? 'active' : ''}`;
+            btn.innerHTML = `
+                <span>${mgr}</span>
+                <span class="badge-count">${managerCounts[mgr]}</span>
+            `;
+            btn.addEventListener('click', () => {
+                state.selectedManager = mgr;
+                state.currentPage = 1; // 필터 변경 시 1페이지로 리셋
+                Array.from(filterListEl.children).forEach(child => child.classList.remove('active'));
+                btn.classList.add('active');
+                updateDashboardDetails();
+            });
+            filterListEl.appendChild(btn);
+        });
+
+        state.currentPage = 1; // 초기 렌더링 시 1페이지로 리셋
+        updateDashboardDetails();
+    }
+
+    // 필터링된 결과 상세 렌더링
+    function updateDashboardDetails() {
+        const allItems = [...state.validItems, ...state.unusedItems].filter(item => !item.hidden);
+        
+        // 담당자 필터
+        let filtered = allItems;
+        if (state.selectedManager !== '전체') {
+            filtered = allItems.filter(item => {
+                const mgr = item.manager || '미지정';
+                return mgr === state.selectedManager;
+            });
+        }
+
+        // 검색어 필터
+        const query = state.searchQuery.trim().toLowerCase();
+        if (query) {
+            filtered = filtered.filter(item => {
+                return String(item.partNumber).toLowerCase().includes(query) || 
+                       String(item.name).toLowerCase().includes(query);
+            });
+        }
+
+        // 등급별 통계 집계 (소요 금액 & 재고 금액 더블 집계)
+        let countA = 0, countB = 0, countC = 0, countUnused = 0;
+        let sumUsageA = 0, sumUsageB = 0, sumUsageC = 0, sumUsageUnused = 0;
+        let sumStockA = 0, sumStockB = 0, sumStockC = 0, sumStockUnused = 0;
+
+        filtered.forEach(item => {
+            const usageCost = item.total1YearCostMonth || 0; // 월평균 소요금액
+            const stockCost = item.totalStockCost || 0;     // 최신 재고금액
+
+            if (item.grade === 'A') {
+                countA++;
+                sumUsageA += usageCost;
+                sumStockA += stockCost;
+            } else if (item.grade === 'B') {
+                countB++;
+                sumUsageB += usageCost;
+                sumStockB += stockCost;
+            } else if (item.grade === 'C') {
+                countC++;
+                sumUsageC += usageCost;
+                sumStockC += stockCost;
+            } else if (item.grade === '불용') {
+                countUnused++;
+                sumUsageUnused += usageCost;
+                sumStockUnused += stockCost;
+            }
+        });
+
+        const totalUsageCost = sumUsageA + sumUsageB + sumUsageC + sumUsageUnused;
+        const totalStockCost = sumStockA + sumStockB + sumStockC + sumStockUnused;
+
+        // 등급별 목표 재고 일수 조회 및 가중 평균 연산 헬퍼
+        const getTargetDays = (grade) => {
+            if (!state.targetDaysFile || Object.keys(state.targetDaysMap).length === 0) return null;
+            if (grade === '불용') return null;
+
+            if (state.selectedManager !== '전체') {
+                const cleanSelMgr = state.selectedManager.replace(/\s+/g, '').toLowerCase();
+                return state.targetDaysMap[`${cleanSelMgr}_${grade}`] || null;
+            } else {
+                let weightedTargetSum = 0;
+                let weightSum = 0;
+                
+                const mgrUsageMap = {};
+                filtered.forEach(item => {
+                    if (item.grade === grade) {
+                        const mgr = item.manager || '미지정';
+                        mgrUsageMap[mgr] = (mgrUsageMap[mgr] || 0) + (item.total1YearCostMonth || 0);
+                    }
+                });
+
+                Object.keys(mgrUsageMap).forEach(mgr => {
+                    const cleanMgr = mgr.replace(/\s+/g, '').toLowerCase();
+                    const target = state.targetDaysMap[`${cleanMgr}_${grade}`];
+                    const usage = mgrUsageMap[mgr];
+                    if (target > 0 && usage > 0) {
+                        weightedTargetSum += target * usage;
+                        weightSum += usage;
+                    }
+                });
+
+                if (weightSum > 0) {
+                    return weightedTargetSum / weightSum;
+                } else {
+                    let simpleSum = 0;
+                    let count = 0;
+                    const managersWithTarget = new Set();
+                    filtered.forEach(item => {
+                        const mgr = item.manager || '미지정';
+                        const cleanMgr = mgr.replace(/\s+/g, '').toLowerCase();
+                        if (state.targetDaysMap[`${cleanMgr}_${grade}`] > 0) {
+                            managersWithTarget.add(cleanMgr);
+                        }
+                    });
+                    managersWithTarget.forEach(cleanMgr => {
+                        simpleSum += state.targetDaysMap[`${cleanMgr}_${grade}`];
+                        count++;
+                    });
+                    return count > 0 ? simpleSum / count : null;
+                }
+            }
+        };
+
+        const targetA = getTargetDays('A');
+        const targetB = getTargetDays('B');
+        const targetC = getTargetDays('C');
+
+        // 합계 전체 가중 목표 재고 일수 연산 (소요 기준 가중평균)
+        let totalTarget = null;
+        if (state.targetDaysFile) {
+            let totalWeightedSum = 0;
+            let totalWeightSum = 0;
+            
+            const usageA = sumUsageA, usageB = sumUsageB, usageC = sumUsageC;
+            if (targetA > 0 && usageA > 0) { totalWeightedSum += targetA * usageA; totalWeightSum += usageA; }
+            if (targetB > 0 && usageB > 0) { totalWeightedSum += targetB * usageB; totalWeightSum += usageB; }
+            if (targetC > 0 && usageC > 0) { totalWeightedSum += targetC * usageC; totalWeightSum += usageC; }
+
+            if (totalWeightSum > 0) {
+                totalTarget = totalWeightedSum / totalWeightSum;
+            }
+        }
+
+        // 요약 표 렌더링
+        const tableBody = document.getElementById('summary-table-body');
+        const formatRow = (grade, count, usageSum, usageTotal, stockSum, stockTotal) => {
+            const usageRatio = usageTotal > 0 ? ((usageSum / usageTotal) * 100).toFixed(1) : '0.0';
+            const stockRatio = stockTotal > 0 ? ((stockSum / stockTotal) * 100).toFixed(1) : '0.0';
+            
+            let badgeClass = 'unused';
+            if (grade === 'A') badgeClass = 'A';
+            else if (grade === 'B') badgeClass = 'B';
+            else if (grade === 'C') badgeClass = 'C';
+            
+            let rotDays = 0;
+            let rotDaysText = 'N/A';
+            if (grade !== '불용') {
+                rotDays = usageSum > 0 ? (stockSum / usageSum) * 30 : 0;
+                rotDaysText = `${Math.round(rotDays).toLocaleString()} 일`;
+            }
+
+            // 목표 재고 일수 및 달성률 계산
+            let targetDaysText = '-';
+            let achievementText = '-';
+            let achStyle = '';
+
+            if (grade !== '불용' && state.targetDaysFile) {
+                const targetVal = grade === 'A' ? targetA : (grade === 'B' ? targetB : targetC);
+                if (targetVal > 0) {
+                    targetDaysText = `${targetVal.toFixed(1)} 일`;
+                    
+                    if (rotDays > 0) {
+                        const achRatio = (targetVal / rotDays) * 100;
+                        achievementText = `${achRatio.toFixed(1)}%`;
+                        if (achRatio >= 100) {
+                            achStyle = 'color: #059669; font-weight: 800;'; // 초록색 달성
+                            achievementText += ' (달성)';
+                        } else {
+                            achStyle = 'color: #dc2626; font-weight: 800;'; // 빨간색 미달
+                            achievementText += ' (미달)';
+                        }
+                    } else {
+                        achievementText = '100.0% (달성)';
+                        achStyle = 'color: #059669; font-weight: 800;';
+                    }
+                }
+            }
+            
+            return `
+                <tr data-grade="${grade}" style="cursor: pointer; transition: background 0.15s;">
+                    <td style="text-align: left;"><span class="badge-grade ${badgeClass}">${grade === '불용' ? '불용' : grade + ' 등급'}</span></td>
+                    <td>${count.toLocaleString()} 개</td>
+                    <td>${Math.round(usageSum).toLocaleString()} 원</td>
+                    <td style="font-weight: 700; color: #2563eb;">${usageRatio}%</td>
+                    <td>${Math.round(stockSum).toLocaleString()} 원</td>
+                    <td style="font-weight: 700; color: #0d9488;">${stockRatio}%</td>
+                    <td style="font-weight: 700; color: #1e293b;">${rotDaysText}</td>
+                    <td style="color: #475569; font-weight: 600;">${targetDaysText}</td>
+                    <td style="${achStyle}">${achievementText}</td>
+                </tr>
+            `;
+        };
+
+        const totalRotDays = totalUsageCost > 0 ? (totalStockCost / totalUsageCost) * 30 : 0;
+        const totalRotDaysText = `${Math.round(totalRotDays).toLocaleString()} 일`;
+
+        let totalTargetText = '-';
+        let totalAchText = '-';
+        let totalAchStyle = '';
+        if (totalTarget > 0) {
+            totalTargetText = `${totalTarget.toFixed(1)} 일`;
+            if (totalRotDays > 0) {
+                const totalAchRatio = (totalTarget / totalRotDays) * 100;
+                totalAchText = `${totalAchRatio.toFixed(1)}%`;
+                if (totalAchRatio >= 100) {
+                    totalAchStyle = 'color: #059669; font-weight: 800;';
+                    totalAchText += ' (달성)';
+                } else {
+                    totalAchStyle = 'color: #dc2626; font-weight: 800;';
+                    totalAchText += ' (미달)';
+                }
+            } else {
+                totalAchText = '100.0% (달성)';
+                totalAchStyle = 'color: #059669; font-weight: 800;';
+            }
+        }
+
+        tableBody.innerHTML = `
+            ${formatRow('A', countA, sumUsageA, totalUsageCost, sumStockA, totalStockCost)}
+            ${formatRow('B', countB, sumUsageB, totalUsageCost, sumStockB, totalStockCost)}
+            ${formatRow('C', countC, sumUsageC, totalUsageCost, sumStockC, totalStockCost)}
+            ${formatRow('불용', countUnused, sumUsageUnused, totalUsageCost, sumStockUnused, totalStockCost)}
+            <tr style="background: #f8fafc; font-weight: 700;">
+                <td style="text-align: left;">합계</td>
+                <td>${filtered.length.toLocaleString()} 개</td>
+                <td>${Math.round(totalUsageCost).toLocaleString()} 원</td>
+                <td>100.0%</td>
+                <td>${Math.round(totalStockCost).toLocaleString()} 원</td>
+                <td>100.0%</td>
+                <td style="color: #1e293b;">${totalRotDaysText}</td>
+                <td style="color: #475569; font-weight: 700;">${totalTargetText}</td>
+                <td style="${totalAchStyle}">${totalAchText}</td>
+            </tr>
+        `;
+
+        const colorA = '#2563eb';
+        const colorB = '#0d9488';
+        const colorC = '#d97706';
+        const colorUnused = '#64748b';
+
+        // ------------------ 1. 재고 회전 일수 가로 막대 그래프 렌더링 ------------------
+        const rotA = sumUsageA > 0 ? (sumStockA / sumUsageA) * 30 : 0;
+        const rotB = sumUsageB > 0 ? (sumStockB / sumUsageB) * 30 : 0;
+        const rotC = sumUsageC > 0 ? (sumStockC / sumUsageC) * 30 : 0;
+        
+        // 그래프 배율 산출 시 실제값과 함께 등급별 목표 재고 일수도 포함하여 삐져나감 방지
+        const validTargets = [targetA, targetB, targetC].filter(v => v > 0);
+        const maxRot = Math.max(rotA, rotB, rotC, ...validTargets) || 1;
+        
+        const getPctWidth = (val) => {
+            if (val === null || val === undefined || isNaN(val) || val <= 0) return 0;
+            return Math.min((val / maxRot) * 100, 100);
+        };
+
+        const getRotDisplay = (val, targetVal, isUnused = false) => {
+            if (isUnused) return 'N/A';
+            const valStr = `${Math.round(val).toLocaleString()} 일`;
+            if (state.targetDaysFile && targetVal > 0) {
+                return `${valStr} (목표: ${Math.round(targetVal)}일)`;
+            }
+            return valStr;
+        };
+
+        const getTargetLineHtml = (targetVal) => {
+            if (!state.targetDaysFile || !targetVal || targetVal <= 0) return '';
+            const pct = getPctWidth(targetVal);
+            return `
+                <div class="bar-target-line" style="left: ${pct}%;"></div>
+                <div class="bar-target-badge" style="left: ${pct}%;">🎯 ${Math.round(targetVal)}일</div>
+            `;
+        };
+
+        const rotChartEl = document.getElementById('rotation-bar-chart');
+        rotChartEl.innerHTML = `
+            <div class="bar-row" data-grade="A" style="transition: all 0.2s ease; cursor: pointer; position: relative; padding-top: 12px;">
+                <div class="bar-label"><span class="badge-grade A">A 등급</span></div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: ${getPctWidth(rotA)}%; background: ${colorA};"></div>
+                    ${getTargetLineHtml(targetA)}
+                </div>
+                <div class="bar-value">${getRotDisplay(rotA, targetA)}</div>
+            </div>
+            <div class="bar-row" data-grade="B" style="transition: all 0.2s ease; cursor: pointer; position: relative; padding-top: 12px;">
+                <div class="bar-label"><span class="badge-grade B">B 등급</span></div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: ${getPctWidth(rotB)}%; background: ${colorB};"></div>
+                    ${getTargetLineHtml(targetB)}
+                </div>
+                <div class="bar-value">${getRotDisplay(rotB, targetB)}</div>
+            </div>
+            <div class="bar-row" data-grade="C" style="transition: all 0.2s ease; cursor: pointer; position: relative; padding-top: 12px;">
+                <div class="bar-label"><span class="badge-grade C">C 등급</span></div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: ${getPctWidth(rotC)}%; background: ${colorC};"></div>
+                    ${getTargetLineHtml(targetC)}
+                </div>
+                <div class="bar-value">${getRotDisplay(rotC, targetC)}</div>
+            </div>
+            <div class="bar-row" data-grade="불용" style="transition: all 0.2s ease; cursor: pointer; position: relative; padding-top: 12px;">
+                <div class="bar-label"><span class="badge-grade unused">불용 등급</span></div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: 0%; background: ${colorUnused};"></div>
+                </div>
+                <div class="bar-value" style="color: #64748b; font-size: 0.85rem; font-weight: normal; text-align: right;">N/A (소요 없음)</div>
+            </div>
+        `;
+
+        // ------------------ 2. 재고금액 비중 도넛 차트 렌더링 ------------------
+        const pctStockA = totalStockCost > 0 ? (sumStockA / totalStockCost) * 100 : 0;
+        const pctStockB = totalStockCost > 0 ? (sumStockB / totalStockCost) * 100 : 0;
+        const pctStockC = totalStockCost > 0 ? (sumStockC / totalStockCost) * 100 : 0;
+        const pctStockUnused = totalStockCost > 0 ? (sumStockUnused / totalStockCost) * 100 : 0;
+
+        const degStockA = (pctStockA * 3.6).toFixed(1);
+        const degStockB = (pctStockB * 3.6).toFixed(1);
+        const degStockC = (pctStockC * 3.6).toFixed(1);
+
+        const accStockA = parseFloat(degStockA);
+        const accStockB = accStockA + parseFloat(degStockB);
+        const accStockC = accStockB + parseFloat(degStockC);
+
+        const stockChartEl = document.getElementById('donut-stock-chart-element');
+        if (totalStockCost > 0) {
+            stockChartEl.style.background = `conic-gradient(
+                ${colorA} 0deg ${accStockA}deg,
+                ${colorB} ${accStockA}deg ${accStockB}deg,
+                ${colorC} ${accStockB}deg ${accStockC}deg,
+                ${colorUnused} ${accStockC}deg 360deg
+            )`;
+        } else {
+            stockChartEl.style.background = `#cbd5e1`;
+        }
+
+        document.getElementById('chart-stock-legend-list').innerHTML = `
+            <div class="legend-item"><div class="legend-color" style="background: ${colorA};"></div><span>A 등급: ${pctStockA.toFixed(1)}%</span></div>
+            <div class="legend-item"><div class="legend-color" style="background: ${colorB};"></div><span>B 등급: ${pctStockB.toFixed(1)}%</span></div>
+            <div class="legend-item"><div class="legend-color" style="background: ${colorC};"></div><span>C 등급: ${pctStockC.toFixed(1)}%</span></div>
+            <div class="legend-item"><div class="legend-color" style="background: ${colorUnused};"></div><span>불용 등급: ${pctStockUnused.toFixed(1)}%</span></div>
+        `;
+
+        // ------------------ 도넛 중앙 레이블 기본값 매핑 ------------------
+        const updateDonutCentersDefault = () => {
+            // 재고 중앙
+            let maxStockGrade = 'A';
+            let maxStockPct = pctStockA;
+            if (pctStockB > maxStockPct) { maxStockGrade = 'B'; maxStockPct = pctStockB; }
+            if (pctStockC > maxStockPct) { maxStockGrade = 'C'; maxStockPct = pctStockC; }
+            if (pctStockUnused > maxStockPct) { maxStockGrade = '불용'; maxStockPct = pctStockUnused; }
+            document.getElementById('donut-stock-center-value').innerText = `${maxStockPct.toFixed(1)}%`;
+            document.getElementById('donut-stock-center-label').innerText = `${maxStockGrade === '불용' ? '불용 등급' : maxStockGrade + ' 등급'}`;
+        };
+        updateDonutCentersDefault();
+
+        // ------------------ 요약 테이블 tr 마우스 호버 연동 ------------------
+        const rows = tableBody.querySelectorAll('tr[data-grade]');
+        rows.forEach(row => {
+            const grade = row.getAttribute('data-grade');
+            row.addEventListener('mouseenter', () => {
+                let stockPct = 0;
+                if (grade === 'A') stockPct = pctStockA;
+                else if (grade === 'B') stockPct = pctStockB;
+                else if (grade === 'C') stockPct = pctStockC;
+                else if (grade === '불용') stockPct = pctStockUnused;
+
+                // 재고 비중 중앙 정보 갱신
+                document.getElementById('donut-stock-center-value').innerText = `${stockPct.toFixed(1)}%`;
+                document.getElementById('donut-stock-center-label').innerText = `${grade === '불용' ? '불용 등급' : grade + ' 등급'}`;
+
+                // 가로 막대 그래프의 해당 등급 바만 강조하고, 다른 등급 바들은 opacity 0.35 적용
+                const barRows = document.querySelectorAll('.bar-row');
+                barRows.forEach(barRow => {
+                    if (barRow.getAttribute('data-grade') === grade) {
+                        barRow.style.opacity = '1';
+                        barRow.style.transform = 'scale(1.02)';
+                    } else {
+                        barRow.style.opacity = '0.35';
+                        barRow.style.transform = 'scale(0.98)';
+                    }
+                });
+
+                row.style.background = 'rgba(37, 99, 235, 0.05)';
+            });
+            row.addEventListener('mouseleave', () => {
+                row.style.background = '';
+                
+                // 가로 막대 그래프의 모든 바 복원
+                const barRows = document.querySelectorAll('.bar-row');
+                barRows.forEach(barRow => {
+                    barRow.style.opacity = '1';
+                    barRow.style.transform = 'none';
+                });
+                
+                updateDonutCentersDefault();
+            });
+        });
+
+        // ------------------ 가로 막대 그래프 bar-row 마우스 호버 연동 ------------------
+        const barRows = document.querySelectorAll('.bar-row');
+        barRows.forEach(barRow => {
+            const grade = barRow.getAttribute('data-grade');
+            barRow.addEventListener('mouseenter', () => {
+                barRows.forEach(b => {
+                    if (b.getAttribute('data-grade') === grade) {
+                        b.style.opacity = '1';
+                        b.style.transform = 'scale(1.02)';
+                    } else {
+                        b.style.opacity = '0.35';
+                        b.style.transform = 'scale(0.98)';
+                    }
+                });
+
+                // 재고 비중 중앙 정보 갱신
+                let stockPct = 0;
+                if (grade === 'A') stockPct = pctStockA;
+                else if (grade === 'B') stockPct = pctStockB;
+                else if (grade === 'C') stockPct = pctStockC;
+                else if (grade === '불용') stockPct = pctStockUnused;
+
+                document.getElementById('donut-stock-center-value').innerText = `${stockPct.toFixed(1)}%`;
+                document.getElementById('donut-stock-center-label').innerText = `${grade === '불용' ? '불용 등급' : grade + ' 등급'}`;
+
+                // 요약 테이블 행 하이라이트
+                const targetRow = tableBody.querySelector(`tr[data-grade="${grade}"]`);
+                if (targetRow) {
+                    targetRow.style.background = 'rgba(37, 99, 235, 0.05)';
+                }
+            });
+            barRow.addEventListener('mouseleave', () => {
+                barRows.forEach(b => {
+                    b.style.opacity = '1';
+                    b.style.transform = 'none';
+                });
+
+                const targetRow = tableBody.querySelector(`tr[data-grade="${grade}"]`);
+                if (targetRow) {
+                    targetRow.style.background = '';
+                }
+
+                updateDonutCentersDefault();
+            });
+        });
+
+        // ==================== 상세 품목 리스트 페이징 로직 적용 ====================
+        const totalItems = filtered.length;
+        const totalPages = Math.ceil(totalItems / state.itemsPerPage) || 1;
+        
+        if (state.currentPage > totalPages) state.currentPage = totalPages;
+        if (state.currentPage < 1) state.currentPage = 1;
+
+        const startIndex = (state.currentPage - 1) * state.itemsPerPage;
+        const endIndex = startIndex + state.itemsPerPage;
+        const pageItems = filtered.slice(startIndex, endIndex);
+
+        // 상세 테이블 리스트 렌더링
+        const detailBody = document.getElementById('detail-table-body');
+        detailBody.innerHTML = '';
+
+        if (pageItems.length === 0) {
+            detailBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">검색 및 필터 조건에 부합하는 품목이 없습니다.</td></tr>`;
+            document.getElementById('pagination-controls').innerHTML = '';
+            return;
+        }
+
+        pageItems.forEach(item => {
+            const tr = document.createElement('tr');
+            let badgeClass = 'unused';
+            if (item.grade === 'A') badgeClass = 'A';
+            else if (item.grade === 'B') badgeClass = 'B';
+            else if (item.grade === 'C') badgeClass = 'C';
+
+            tr.innerHTML = `
+                <td>${item.partNumber}</td>
+                <td style="font-weight: 600;">${item.name || '-'}</td>
+                <td>${item.spec || '-'}</td>
+                <td>${item.manager || '미정'}</td>
+                <td><span class="badge-grade ${badgeClass}">${item.grade === '불용' ? '불용' : item.grade}</span></td>
+                <td class="num-cell">${(item.total1YearQty || 0).toLocaleString()}</td>
+                <td class="num-cell" style="font-weight: 700;">${Math.round(item.total1YearCostMonth || 0).toLocaleString()}</td>
+            `;
+            detailBody.appendChild(tr);
+        });
+
+        // 페이징 컨트롤바 생성
+        const paginationControls = document.getElementById('pagination-controls');
+        paginationControls.innerHTML = '';
+
+        // 이전 버튼
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-btn';
+        prevBtn.innerText = '이전';
+        prevBtn.disabled = state.currentPage === 1;
+        prevBtn.addEventListener('click', () => {
+            state.currentPage--;
+            updateDashboardDetails();
+            document.querySelector('.list-card').scrollIntoView({ behavior: 'smooth' });
+        });
+        paginationControls.appendChild(prevBtn);
+
+        // 페이지 정보 텍스트
+        const pageInfo = document.createElement('span');
+        pageInfo.className = 'page-info';
+        pageInfo.innerText = `${state.currentPage} / ${totalPages} 페이지 (총 ${totalItems.toLocaleString()}건)`;
+        paginationControls.appendChild(pageInfo);
+
+        // 다음 버튼
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-btn';
+        nextBtn.innerText = '다음';
+        nextBtn.disabled = state.currentPage === totalPages;
+        nextBtn.addEventListener('click', () => {
+            state.currentPage++;
+            updateDashboardDetails();
+            document.querySelector('.list-card').scrollIntoView({ behavior: 'smooth' });
+        });
+        paginationControls.appendChild(nextBtn);
+    }
+
+    // 실시간 검색어 이벤트 등록
+    searchKeyword.addEventListener('input', (e) => {
+        state.searchQuery = e.target.value;
+        state.currentPage = 1; // 검색어 입력 시 페이지 1로 초기화
+        updateDashboardDetails();
+    });
+
+    // 엑셀 다운로드 동작 명시적 처리
+    btnDownload.addEventListener('click', async () => {
+        if (!state.processedWorkbook) {
+            alert("다운로드할 데이터가 없습니다.");
+            return;
+        }
+        btnDownload.disabled = true;
+        const prevText = btnDownload.innerHTML;
+        btnDownload.innerHTML = "<span>⏳ 엑셀 빌드 중...</span>";
+        try {
+            const buffer = await state.processedWorkbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            
+            // 파일명에 들어갈 분석 기준월 산출
+            const targetMonthInput = document.getElementById('target-month').value;
+            const [targetYear, targetMonth] = targetMonthInput.split('-');
+            const yearShort = targetYear.slice(-2);
+            
+            saveAs(blob, `${yearShort}년 ${parseInt(targetMonth)}월 구매팀 재고금액.xlsx`);
+        } catch (err) {
+            alert("엑셀 파일 다운로드 중 에러가 발생했습니다: " + err.message);
+        } finally {
+            btnDownload.disabled = false;
+            btnDownload.innerHTML = prevText;
+        }
+    });
+
+    // 다시 업로드 (리셋) 동작 처리
+    btnReset.addEventListener('click', () => {
+        state.templateFile = null;
+        state.priceFile = null;
+        state.purchaseFiles = [];
+        state.stockFiles = [];
+        state.targetDaysFile = null;
+        state.targetDaysMap = {};
+        state.itemsMap = {};
+        state.monthKeys = [];
+        state.validItems = [];
+        state.unusedItems = [];
+        state.colMapping = {};
+        state.processedWorkbook = null;
+        state.selectedManager = '전체';
+        state.searchQuery = '';
+        state.currentPage = 1; // 페이지 상태 초기화
+
+        listTemplate.innerHTML = '';
+        listPrice.innerHTML = '';
+        listPurchase.innerHTML = '';
+        listStock.innerHTML = '';
+        listTargetDays.innerHTML = '';
+        
+        dropTemplate.classList.remove('active');
+        dropPrice.classList.remove('active');
+        dropPurchase.classList.remove('active');
+        dropStock.classList.remove('active');
+        dropTargetDays.classList.remove('active');
+        
+        inputTemplate.value = '';
+        inputPrice.value = '';
+        inputPurchase.value = '';
+        inputStock.value = '';
+        inputTargetDays.value = '';
+        searchKeyword.value = '';
+
+        btnGenerate.disabled = true;
+        consoleLog.innerText = "기초자료 파일을 각각 업로드해 주세요.";
+
+        // 화면 전환
+        dashboardView.style.display = 'none';
+        inputView.style.display = 'block';
+    });
 
     function readFileAsArray(file) {
         return new Promise((resolve, reject) => {
